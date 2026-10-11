@@ -107,6 +107,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="langBar">
       <button class="langBtn active" id="btnJa" onclick="setLang('ja')">🇯🇵</button>
       <button class="langBtn" id="btnEn" onclick="setLang('en')">🇬🇧</button>
+      <button class="langBtn active" id="btnSound" type="button" aria-label="Sound">🔊</button>
     </div>
   </div>
   <canvas id="canvas" width="360" height="560"></canvas>
@@ -211,12 +212,33 @@ document.addEventListener('keydown', e => {
 canvas.addEventListener('touchstart', e => { e.preventDefault(); jump(); }, {passive:false});
 
 // ── Audio ─────────────────────────────────────────
+// 音のオン・オフ（前回の設定を覚えておく）
+let soundOn = true;
+try { soundOn = localStorage.getItem('foxySound') !== 'off'; } catch(e) {}
+const soundBtnEl = document.getElementById('btnSound');
+function updateSoundBtn() {
+  soundBtnEl.textContent = soundOn ? '🔊' : '🔇';
+  soundBtnEl.classList.toggle('active', soundOn);
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  try { localStorage.setItem('foxySound', soundOn ? 'on' : 'off'); } catch(e) {}
+  updateSoundBtn();
+  if (!soundOn) stopBGM();
+  else if (state === 'playing') startBGM();
+}
+// ボタンを押してもジャンプしないよう、イベントを止める
+['touchstart', 'click'].forEach(ev => soundBtnEl.addEventListener(ev, e => { e.stopPropagation(); }, { passive: true }));
+soundBtnEl.addEventListener('click', () => { toggleSound(); soundBtnEl.blur(); });
+updateSoundBtn();
+
 let audioCtx;
 function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
 }
 function playFlap() {
+  if (!soundOn) return;
   try {
     const ac = getAudio();
     const o = ac.createOscillator(); const g = ac.createGain();
@@ -229,6 +251,7 @@ function playFlap() {
   } catch(e) {}
 }
 function playScore() {
+  if (!soundOn) return;
   try {
     const ac = getAudio();
     [523, 659, 784].forEach((f, i) => {
@@ -243,6 +266,7 @@ function playScore() {
   } catch(e) {}
 }
 function playDie() {
+  if (!soundOn) return;
   try {
     const ac = getAudio();
     const o = ac.createOscillator(), g = ac.createGain();
@@ -304,6 +328,7 @@ const LOOP_LEN = MELODY.reduce((s, [, d]) => s + d, 0) * STEP;
 
 function startBGM() {
   stopBGM();
+  if (!soundOn) return;
   try {
     const ac = getAudio();
     if (ac.state === 'suspended') ac.resume();

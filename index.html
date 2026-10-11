@@ -633,7 +633,7 @@ function hideShareBtn() { shareBtnEl.style.visibility = 'hidden'; }
 function shareScoreOnX() {
   const inApp = !!(window.Android && typeof window.Android.openUrl === 'function');
   const pageUrl = inApp
-    ? 'https://play.google.com/store/apps/details?id=com.jenny.foxyflap'
+    ? 'https://play.google.com/store/apps/details?id=com.kitsunechess.foxyflap'
     : 'https://flap.kitsunechess.com/';
   const text = LANG === 'ja'
     ? 'Foxy Flapでスコア' + lastScore + 'を達成！🦊' + (lastIsRecord ? '（自己ベスト更新！）' : '') + '\n#foxyflap'
